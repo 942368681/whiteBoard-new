@@ -1,13 +1,17 @@
 {
     "name": "white-board-pro2",
-    "version": "1.0.7",
-    "description": "",
+    "version": "1.0.8",
+    "description": "web画写板控件",
     "main": "dist/white-board-pro2.js",
     "scripts": {
         "clean": "rimraf dist",
         "build": "npm run clean && NODE_ENV=production rollup -c scripts/rollup.config.prod.js",
         "start": "npm run clean && NODE_ENV=development rollup -w -c scripts/rollup.config.dev.js",
         "prepublish": "npm run build"
+    },
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/942368681/whiteBoard-new.git"
     },
     "keywords": [
         "javascript",
@@ -16,6 +20,10 @@
     ],
     "author": "sfl",
     "license": "ISC",
+    "bugs": {
+        "url": "https://github.com/942368681/whiteBoard-new/issues"
+    },
+    "homepage": "https://github.com/942368681/whiteBoard-new#readme",
     "devDependencies": {
         "@babel/core": "^7.8.4",
         "@babel/plugin-transform-runtime": "^7.8.3",
@@ -32,5 +40,10 @@
     },
     "dependencies": {
         "core-js": "^3.6.4"
-    }
+    },
+    "files": [
+        "dist",
+        "package.json",
+        "README.md"
+    ]
 }
