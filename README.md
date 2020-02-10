@@ -19,7 +19,7 @@ $ npm install -S white-board-pro2
 ```bash
 // index.js
 
-import { board } from '../src/white-board';
+import { WhiteBoard } from 'white-board-pro2';
 ```
 
 ## 使用
@@ -27,7 +27,7 @@ import { board } from '../src/white-board';
 基本使用:
 
 ```bash
-var myboard = board({
+var myboard = WhiteBoard({
     "el": ".box",
     "maxPage": 5,
     "pageHeight": 100,
