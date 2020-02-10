@@ -1,8 +1,8 @@
-import { board } from '../src/white-board';
+import { WhiteBoard } from '../src/main';
 
 const t1 = new Date().getTime();
 
-window.oCanvas = board({
+window.oCanvas = WhiteBoard({
     "el": ".box",
     "maxPage": 5,
     // "pageHeight": 100,

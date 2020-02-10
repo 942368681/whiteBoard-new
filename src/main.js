@@ -1,5 +1,5 @@
-import { board } from './white-board';
+import { board as WhiteBoard } from './white-board';
 
 export {
-    board
+    WhiteBoard
 }
