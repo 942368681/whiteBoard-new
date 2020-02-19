@@ -278,7 +278,10 @@ var board = null;
         this.el = el;
         this.elWidth = el.width;
         this.elHeight = el.height;
-        this.info = obj;
+        this.info = Object.assign(obj, {containerRect: {
+            width: el.width,
+            height: el.height
+        }});
         this.canvasSettings = {
             strokeStyle: '',
             lineWidth: '',
@@ -533,7 +536,7 @@ var board = null;
                 this.info.content.push(this.curve);
                 this.curve = null;
             }
-            // console.log(this.info)
+            // console.log(this.info);
             // console.log(this.info.content);
             // console.log(JSON.stringify(this.info.content));
         },
