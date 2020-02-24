@@ -226,6 +226,12 @@ var board = null;
 
         // 单个画布的创建
         createCanvas: function (obj) {
+            // 检测对象是否可写，否则抛出错误
+            var ownPropertyDescript = Object.getOwnPropertyDescriptor(obj, 'inputType');
+            if (!ownPropertyDescript.writable || !ownPropertyDescript.configurable) {
+                throw new Error('输入数据为只读，无法加载组件');
+            }
+
             var parentEl = d.createElement('div');
             parentEl.setAttribute('class', 'board-box board-box-' + obj.zIndex);
             parentEl.style.height = this.wrapDom.getBoundingClientRect().height + 'px';
@@ -536,7 +542,7 @@ var board = null;
                 this.info.content.push(this.curve);
                 this.curve = null;
             }
-            // console.log(this.info);
+            // console.log(JSON.stringify(this.info));
             // console.log(this.info.content);
             // console.log(JSON.stringify(this.info.content));
         },
