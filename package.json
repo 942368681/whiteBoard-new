@@ -5,8 +5,8 @@
     "main": "dist/white-board-pro2.js",
     "scripts": {
         "clean": "rimraf dist",
-        "build": "npm run clean && NODE_ENV=production rollup -c scripts/rollup.config.prod.js",
-        "start": "npm run clean && NODE_ENV=development rollup -w -c scripts/rollup.config.dev.js",
+        "build": "npm run clean && cross-env NODE_ENV=production rollup -c scripts/rollup.config.prod.js",
+        "start": "npm run clean && cross-env NODE_ENV=development rollup -w -c scripts/rollup.config.dev.js",
         "prepublish": "npm run build"
     },
     "repository": {
@@ -28,6 +28,7 @@
         "@babel/core": "^7.8.4",
         "@babel/plugin-transform-runtime": "^7.8.3",
         "@babel/preset-env": "^7.8.4",
+        "cross-env": "^7.0.0",
         "rollup-plugin-babel": "^4.3.3",
         "rollup-plugin-commonjs": "^10.1.0",
         "rollup-plugin-eslint": "^7.0.0",
