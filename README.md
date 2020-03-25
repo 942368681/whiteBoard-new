@@ -158,3 +158,9 @@ var myboard = WhiteBoard({
         inputType: "fountain-pen" // 输入类型
     });
 ```
+
+#### 销毁画板组件
+
+```bash
+    myBoard.dispose();
+```

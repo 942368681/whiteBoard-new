@@ -261,6 +261,17 @@ var board = null;
         disableBoard: function (bool) {
             this.options.zIndexInfo[0].disabled = bool;
             this.initLayout();
+        },
+
+        // 销毁白板实例
+        dispose: function () {
+            if (!this.wrapDom) return;
+            this.clearWrapDom(this.wrapDom);
+            for (var key in this) {
+                if (this.hasOwnProperty(key)) {
+                    this[key] = null;
+                }
+            }
         }
     };
 
