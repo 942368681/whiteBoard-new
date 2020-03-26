@@ -15,7 +15,7 @@ export default [
         output: {
             name,
             banner,
-            file: `dist/${name}.js`,
+            file: `dist/${name}.min.js`,
             format: 'umd'
         },
         plugins: [
