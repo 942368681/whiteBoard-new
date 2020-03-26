@@ -265,17 +265,26 @@ var board = null;
 
         // 销毁白板实例
         dispose: function () {
-            if (!this.wrapDom) return;
-            this.clearWrapDom(this.wrapDom);
+            this.wrapDom && this.clearWrapDom(this.wrapDom);
             for (var key in this) {
                 if (this.hasOwnProperty(key)) {
-                    this[key] = null;
+                    if (key === 'canvasObj') {
+                        var canvasObj = this[key];
+                        for (var i = 0, len = canvasObj.length; i < len; i++) {
+                            for (var k in canvasObj[i]) {
+                                if (canvasObj[i].hasOwnProperty(k)) {
+                                    canvasObj[i][k] = null;
+                                }
+                            }
+                        }
+                    } else {
+                        this[key] = null;
+                    }
                 }
             }
         }
     };
 
-    // if (!w.WhiteBoard) w.WhiteBoard = WhiteBoard;
     board = WhiteBoard;
 
 
