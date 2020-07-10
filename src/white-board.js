@@ -109,37 +109,28 @@ var board = null;
             var wrapH = this.wrapDom.getBoundingClientRect().height;
 
             for (var i = 0, len = item.content.length; i < len; i++) {
-                for (var j = 0, l = item.content[i].path.length; j < l; j++) {
-                    // 更新Y轴轨迹点比例
-                    item.content[i].path[j].y = (item.content[i].path[j].y * curHeight) / wrapH;
+                for (var j = 0, l = item.content[i].y.length; j < l; j++) {
+                    // 更新Y轴轨迹点
+                    item.content[i].y[j] = Number(((item.content[i].y[j] * curHeight) / wrapH).toFixed(0));
                 }
-                // 更新轨迹矩形区域比例
-                item.content[i].rectArea = this.getRectArea(item.content[i].path, rubberRange, this.wrapDom);
+                // 更新轨迹矩形区域
+                item.content[i].rectArea = this.getRectArea(item.content[i], rubberRange, this.wrapDom);
             }
         },
 
         // 计算轨迹矩形区域
-        getRectArea: function (pathArr, rubberRange, el) {
-            var disX = rubberRange / el.clientWidth;
-            var disY = rubberRange / el.clientHeight;
-            var o = {
-                xMin: Infinity,
-                xMax: -Infinity,
-                yMin: Infinity,
-                yMax: -Infinity
+        getRectArea: function (pathInfo, rubberRange, el) {
+            var obj = {
+                xMin: Math.min.apply(null, pathInfo.x),
+                xMax: Math.max.apply(null, pathInfo.x),
+                yMin: Math.min.apply(null, pathInfo.y),
+                yMax: Math.max.apply(null, pathInfo.y)
             };
-            var obj = pathArr.reduce(function (prev, cur) {
-                prev.xMin = Math.min.apply(null, [prev.xMin, cur.x]);
-                prev.xMax = Math.max.apply(null, [prev.xMax, cur.x]);
-                prev.yMin = Math.min.apply(null, [prev.yMin, cur.y]);
-                prev.yMax = Math.max.apply(null, [prev.yMax, cur.y]);
-                return prev;
-            }, o);
             return [
-                obj.xMin - disX <= 0 ? 0 : obj.xMin - disX,
-                obj.xMax + disX >= el.clientWidth ? el.clientWidth : obj.xMax + disX,
-                obj.yMin - disY <= 0 ? 0 : obj.yMin - disY,
-                obj.yMax + disY >= el.clientHeight ? el.clientHeight : obj.yMax + disY
+                obj.xMin - rubberRange <= 0 ? 0 : obj.xMin - rubberRange,
+                obj.xMax + rubberRange >= el.clientWidth ? el.clientWidth : obj.xMax + rubberRange,
+                obj.yMin - rubberRange <= 0 ? 0 : obj.yMin - rubberRange,
+                obj.yMax + rubberRange >= el.clientHeight ? el.clientHeight : obj.yMax + rubberRange
             ];
         },
 
@@ -169,7 +160,7 @@ var board = null;
              * 测试
              */
             // 测试橡皮擦 && 画笔
-            /* var testBtn = document.createElement('button');
+            var testBtn = document.createElement('button');
             testBtn.innerText = "橡皮";
             testBtn.style.position = 'absolute';
             testBtn.style.zIndex = 999;
@@ -189,7 +180,7 @@ var board = null;
             testBtn.onclick = function () {
                 // _self.canvasObj[0].setUp({ inputType: 'fluorescent-pen', strokeStyle: '#FFF4DA' });
                 _self.canvasObj[0].setUp({ inputType: 'fountain-pen', strokeStyle: '#FF9500' });
-            }; */
+            };
         },
 
         initAddBtn: function () {
@@ -304,6 +295,7 @@ var board = null;
         this.el = el;
         this.elWidth = el.width;
         this.elHeight = el.height;
+        this.baseContainerRect = obj.containerRect || { width: el.width, height: el.height };
         this.info = Object.assign(obj, {containerRect: {
             width: el.width,
             height: el.height
@@ -351,7 +343,7 @@ var board = null;
         },
         // 根据压感参数设置当前点的粗细
         setPointSize: function (baseLineWidth, pressure) {
-            this.ctx.lineWidth = baseLineWidth * pressure;
+            this.ctx.lineWidth = baseLineWidth * (pressure/4096);
         },
         // 初始化画板功能
         initCtx: function () {
@@ -519,7 +511,9 @@ var board = null;
             } else {
                 this.coords = coords;
                 this.curve = {
-                    path: [],
+                    p: [],
+                    x: [],
+                    y: [],
                     canvasSettings: Object.assign({}, this.canvasSettings),
                     rectArea: []
                 };
@@ -558,7 +552,7 @@ var board = null;
                 this.rubberUp(e);
             } else {
                 if (!this.curve) return;
-                this.curve.rectArea = this.superClass.getRectArea(this.curve.path, this.rubberRange, this.el);
+                this.curve.rectArea = this.superClass.getRectArea(this.curve, this.rubberRange, this.el);
                 this.info.content.push(this.curve);
                 this.curve = null;
             }
@@ -571,26 +565,25 @@ var board = null;
             if (this.isDrawing && this.canvasSettings.inputType !== 'rubber' && this.curve) {
                 // 绘制
                 // 存入当前轨迹点
-                this.curve.path.push({
-                    x: this.coords.x / this.elWidth,
-                    y: this.coords.y / this.elHeight,
-                    pressure: this.coords.pressure
-                    // pressure: this.pressure
-                });
-                if (this.curve.path.length > 3) {
-                    const lastTwoPoints = this.curve.path.slice(-2);
-                    const controlPoint = {
-                        x: lastTwoPoints[0].x * this.elWidth,
-                        y: lastTwoPoints[0].y * this.elHeight
+                var oP = Number((this.coords.pressure*4096).toFixed(0));
+                this.curve.x.push(this.coords.x);
+                this.curve.y.push(this.coords.y);
+                this.curve.p.push(oP);
+                if (this.curve.x.length > 3) {
+                    var lastTwoPointsX = this.curve.x.slice(-2);
+                    var lastTwoPointsY = this.curve.y.slice(-2);
+                    var controlPoint = {
+                        x: lastTwoPointsX[0],
+                        y: lastTwoPointsY[0]
                     }
-                    const endPoint = {
-                        x: (lastTwoPoints[0].x * this.elWidth + lastTwoPoints[1].x * this.elWidth) / 2,
-                        y: (lastTwoPoints[0].y * this.elHeight + lastTwoPoints[1].y * this.elHeight) / 2
+                    var endPoint = {
+                        x: (lastTwoPointsX[0] + lastTwoPointsX[1]) / 2,
+                        y: (lastTwoPointsY[0] + lastTwoPointsY[1]) / 2
                     }
 
-                    if (!this.prevPressure || this.prevPressure !== this.coords.pressure) {
-                        this.prevPressure = this.coords.pressure;
-                        this.setPointSize(this.canvasSettings.lineWidth, this.coords.pressure);
+                    if (!this.prevPressure || this.prevPressure !== oP) {
+                        this.prevPressure = oP;
+                        this.setPointSize(this.canvasSettings.lineWidth, oP);
                     }
 
                     this.ctx.beginPath();
@@ -602,8 +595,8 @@ var board = null;
                     this.beginPoint = endPoint;
                 } else {
                     this.beginPoint = {
-                        x: this.curve.path[0].x * this.elWidth,
-                        y: this.curve.path[0].y * this.elHeight
+                        x: this.curve.x[0],
+                        y: this.curve.y[0]
                     };
                 }
             }
@@ -669,10 +662,10 @@ var board = null;
                 var oContent = this.info.content[i];
                 if (!oContent) continue;
 
-                var xMin = Number((oContent.rectArea[0] * this.elWidth).toFixed(0));
-                var xMax = Number((oContent.rectArea[1] * this.elWidth).toFixed(0));
-                var yMin = Number((oContent.rectArea[2] * this.elHeight).toFixed(0));
-                var yMax = Number((oContent.rectArea[3] * this.elHeight).toFixed(0));
+                var xMin = oContent.rectArea[0];
+                var xMax = oContent.rectArea[1];
+                var yMin = oContent.rectArea[2];
+                var yMax = oContent.rectArea[3];
 
                 var rect2 = {
                     x: xMin,
@@ -734,12 +727,12 @@ var board = null;
                 rect.y,
                 rect.y + rect.height
             ];
-            var pathArr = oContent.path;
-            for (var i = 0, len = pathArr.length; i < len; i++) {
-                var oPoint = pathArr[i];
+            var xArr = oContent.x;
+            var yArr = oContent.y;
+            for (var i = 0, len = xArr.length; i < len; i++) {
                 var coords = {
-                    x: oPoint.x * this.elWidth,
-                    y: oPoint.y * this.elHeight
+                    x: xArr[i],
+                    y: yArr[i]
                 };
                 if (this.isFitPath(coords, rectArea)) {
                     return true;
@@ -808,35 +801,40 @@ var board = null;
 
             var content = this.info.content;
             var prevPressure = null;
+            var baseWidth = this.baseContainerRect.width;
+            var baseHeight = this.baseContainerRect.height;
 
             for (var i = 0, len = content.length; i < len; i++) {
                 var oPathInfo = content[i];
-                if (!oPathInfo || !oPathInfo.path.length) continue;
+                var xArr = oPathInfo.x;
+                var yArr = oPathInfo.y;
+                var pArr = oPathInfo.p;
 
-                var arr = oPathInfo.path;
+                if (!oPathInfo || !pArr.length || !xArr.length || !yArr.length) continue;
 
                 this.setUp(oPathInfo.canvasSettings);
                 this.beginPoint = {
-                    x: arr[0].x * this.elWidth,
-                    y: arr[0].y * this.elHeight
+                    x: (oPathInfo.x[0]/baseWidth) * this.elWidth,
+                    y: (oPathInfo.y[0]/baseHeight) * this.elHeight
                 };
 
-                for (var j = 0, length = arr.length; j < length; j++) {
-                    if ((j + 2) > arr.length) break;
+                for (var j = 0, length = xArr.length; j < length; j++) {
+                    if ((j + 2) > xArr.length) break;
                     if (j > 1) {
-                        const lastTwoPoints = arr.slice(j, j + 2);
-                        const controlPoint = {
-                            x: lastTwoPoints[0].x * this.elWidth,
-                            y: lastTwoPoints[0].y * this.elHeight
+                        var lastTwoPointsX = xArr.slice(j, j + 2);
+                        var lastTwoPointsY = yArr.slice(j, j + 2);
+                        var controlPoint = {
+                            x: (lastTwoPointsX[0]/baseWidth) * this.elWidth,
+                            y: (lastTwoPointsY[0]/baseHeight) * this.elHeight
                         }
-                        const endPoint = {
-                            x: (lastTwoPoints[0].x * this.elWidth + lastTwoPoints[1].x * this.elWidth) / 2,
-                            y: (lastTwoPoints[0].y * this.elHeight + lastTwoPoints[1].y * this.elHeight) / 2
+                        var endPoint = {
+                            x: (((lastTwoPointsX[0]/baseWidth) * this.elWidth) + ((lastTwoPointsX[1]/baseWidth) * this.elWidth)) / 2,
+                            y: (((lastTwoPointsY[0]/baseHeight) * this.elHeight) + ((lastTwoPointsY[1]/baseHeight)) * this.elHeight) / 2
                         }
 
-                        if (!prevPressure || prevPressure !== arr[j].pressure) {
-                            prevPressure = arr[j].pressure;
-                            this.setPointSize(oPathInfo.canvasSettings.lineWidth, arr[j].pressure);
+                        if (!prevPressure || prevPressure !== pArr[j]) {
+                            prevPressure = pArr[j];
+                            this.setPointSize(oPathInfo.canvasSettings.lineWidth, pArr[j]);
                         }
 
                         this.ctx.beginPath();
