@@ -140,7 +140,8 @@ var board = null;
             var maxPage = Math.max.apply(Math, this.options.zIndexInfo.map(function (e) {
                 return (e.page || 1)
             }));
-            this.wrapDom.style.height = this.initHeight + ((maxPage - 1) * this.pageHeight) + 'px';
+            var h = this.initHeight + ((maxPage - 1) * this.pageHeight);
+            this.wrapDom.style.height = h + 'px';
             this.wrapDom.style.position = 'relative';
 
             // 清理dom和已挂载到canvasObj的canvas实例和其他元素
@@ -148,19 +149,25 @@ var board = null;
 
             for (var i = 0, len = this.options.zIndexInfo.length; i < len; i++) {
                 var item = this.options.zIndexInfo[i];
-                if (type === 'isAddPage') this.resetScale(item, curHeight, this.options.rubberRange);
+                // if (type === 'isAddPage') this.resetScale(item, curHeight, this.options.rubberRange);
+                if (type === 'isAddPage') {
+                    item.containerRect.height = h;
+                } else {
+                    for (var index = 0; index < item.content.length; index++) {
+                        item.content[index].rectArea = this.getRectArea(item.content[index], this.options.rubberRange, this.wrapDom);
+                    }
+                }
                 this.createCanvas(item);
             }
 
             // 加纸按钮
             if (this.options.addBtn !== false) this.initAddBtn();
 
-
             /**
              * 测试
              */
             // 测试橡皮擦 && 画笔
-            var testBtn = document.createElement('button');
+            /* var testBtn = document.createElement('button');
             testBtn.innerText = "橡皮";
             testBtn.style.position = 'absolute';
             testBtn.style.zIndex = 999;
@@ -180,7 +187,7 @@ var board = null;
             testBtn.onclick = function () {
                 // _self.canvasObj[0].setUp({ inputType: 'fluorescent-pen', strokeStyle: '#FFF4DA' });
                 _self.canvasObj[0].setUp({ inputType: 'fountain-pen', strokeStyle: '#FF9500' });
-            };
+            }; */
         },
 
         initAddBtn: function () {
@@ -246,6 +253,18 @@ var board = null;
             this.options.zIndexInfo[0].page += 1;
             this.initLayout('isAddPage');
             if (this.options.addCallBack && typeof this.options.addCallBack === 'function') this.options.addCallBack();
+        },
+
+        // 保存
+        getBoardData: function () {
+            var handleCon = this.options.zIndexInfo[0].content.map(function (e) {
+                var o = Object.assign({}, e);
+                delete o.rectArea;
+                return o;
+            });
+            var res = Object.assign({}, this.options.zIndexInfo[0]);
+            res.content = handleCon;
+            return res;
         },
 
         // 禁用画板
@@ -809,13 +828,23 @@ var board = null;
                 var xArr = oPathInfo.x;
                 var yArr = oPathInfo.y;
                 var pArr = oPathInfo.p;
+                if (baseWidth !== this.info.containerRect.width || baseHeight !== this.info.containerRect.height) {
+                    for (var index = 0; index < xArr.length; index++) {
+                        xArr[index] = Number(((xArr[index]/baseWidth) * this.elWidth).toFixed(0));
+                    }
+                    for (var index = 0; index < yArr.length; index++) {
+                        yArr[index] = Number(((yArr[index]/baseHeight) * this.elHeight).toFixed(0));
+                    }
+                    content[i].rectArea = this.superClass.getRectArea(content[i], this.rubberRange, this.el);
+                    this.baseContainerRect = this.info.containerRect;
+                }
 
                 if (!oPathInfo || !pArr.length || !xArr.length || !yArr.length) continue;
 
                 this.setUp(oPathInfo.canvasSettings);
                 this.beginPoint = {
-                    x: (oPathInfo.x[0]/baseWidth) * this.elWidth,
-                    y: (oPathInfo.y[0]/baseHeight) * this.elHeight
+                    x: xArr[0],
+                    y: yArr[0]
                 };
 
                 for (var j = 0, length = xArr.length; j < length; j++) {
@@ -824,12 +853,12 @@ var board = null;
                         var lastTwoPointsX = xArr.slice(j, j + 2);
                         var lastTwoPointsY = yArr.slice(j, j + 2);
                         var controlPoint = {
-                            x: (lastTwoPointsX[0]/baseWidth) * this.elWidth,
-                            y: (lastTwoPointsY[0]/baseHeight) * this.elHeight
+                            x: lastTwoPointsX[0],
+                            y: lastTwoPointsY[0]
                         }
                         var endPoint = {
-                            x: (((lastTwoPointsX[0]/baseWidth) * this.elWidth) + ((lastTwoPointsX[1]/baseWidth) * this.elWidth)) / 2,
-                            y: (((lastTwoPointsY[0]/baseHeight) * this.elHeight) + ((lastTwoPointsY[1]/baseHeight)) * this.elHeight) / 2
+                            x: (lastTwoPointsX[0] + lastTwoPointsX[1]) / 2,
+                            y: (lastTwoPointsY[0] + lastTwoPointsY[1]) / 2
                         }
 
                         if (!prevPressure || prevPressure !== pArr[j]) {
