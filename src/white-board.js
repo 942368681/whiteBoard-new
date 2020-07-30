@@ -588,7 +588,7 @@ var board = null;
                 this.curve.x.push(this.coords.x);
                 this.curve.y.push(this.coords.y);
                 this.curve.p.push(oP);
-                if (this.curve.x.length > 3) {
+                if (this.curve.x.length > 2) {
                     var lastTwoPointsX = this.curve.x.slice(-2);
                     var lastTwoPointsY = this.curve.y.slice(-2);
                     var controlPoint = {
@@ -803,8 +803,8 @@ var board = null;
             x *= (width / rect.width);
             y *= (height / rect.height);
             return {
-                x: x,
-                y: y,
+                x: Number(x.toFixed(0)),
+                y: Number(y.toFixed(0)),
                 pressure: e.pointerType === 'pen' ? e.pressure : 1
             };
         },
@@ -848,10 +848,9 @@ var board = null;
                 };
 
                 for (var j = 0, length = xArr.length; j < length; j++) {
-                    if ((j + 2) > xArr.length) break;
                     if (j > 1) {
-                        var lastTwoPointsX = xArr.slice(j, j + 2);
-                        var lastTwoPointsY = yArr.slice(j, j + 2);
+                        var lastTwoPointsX = xArr.slice(j - 1, j + 1);
+                        var lastTwoPointsY = yArr.slice(j - 1, j + 1);
                         var controlPoint = {
                             x: lastTwoPointsX[0],
                             y: lastTwoPointsY[0]
@@ -860,7 +859,6 @@ var board = null;
                             x: (lastTwoPointsX[0] + lastTwoPointsX[1]) / 2,
                             y: (lastTwoPointsY[0] + lastTwoPointsY[1]) / 2
                         }
-
                         if (!prevPressure || prevPressure !== pArr[j]) {
                             prevPressure = pArr[j];
                             this.setPointSize(oPathInfo.canvasSettings.lineWidth, pArr[j]);
