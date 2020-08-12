@@ -1,7 +1,6 @@
 /**
  *  @brief     白板组件
  *  @author    sfl
- *  @version   2.6.2 老版本（2.6.2）
  *  @date      2019.4
  */
 
