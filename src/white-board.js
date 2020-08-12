@@ -47,8 +47,10 @@ var board = null;
         o.zIndexInfo.sort(function (prev, next) {
             return next.zIndex - prev.zIndex
         });
+        // DPI
+        this.dpr = w.devicePixelRatio || 1;
         // 当前环境是否支持Pointer事件
-        this.pointerSupport = window.PointerEvent ? true : false;
+        this.pointerSupport = w.PointerEvent ? true : false;
         // 初始参数赋值
         this.options = o;
         // 父级容器dom
@@ -103,7 +105,7 @@ var board = null;
         },
 
         // 加纸时重置轨迹点Y轴比例
-        resetScale: function (item, curHeight, rubberRange) {
+        /* resetScale: function (item, curHeight, rubberRange) {
             if (!item.content.length) return;
 
             var wrapH = this.wrapDom.getBoundingClientRect().height;
@@ -116,7 +118,7 @@ var board = null;
                 // 更新轨迹矩形区域
                 item.content[i].rectArea = this.getRectArea(item.content[i], rubberRange, this.wrapDom);
             }
-        },
+        }, */
 
         // 计算轨迹矩形区域
         getRectArea: function (pathInfo, rubberRange, el) {
@@ -126,11 +128,13 @@ var board = null;
                 yMin: Math.min.apply(null, pathInfo.y),
                 yMax: Math.max.apply(null, pathInfo.y)
             };
+            var maxWidth = el.clientWidth * this.dpr;
+            var maxHeight = el.clientHeight * this.dpr;
             return [
                 obj.xMin - rubberRange <= 0 ? 0 : obj.xMin - rubberRange,
-                obj.xMax + rubberRange >= el.clientWidth ? el.clientWidth : obj.xMax + rubberRange,
+                obj.xMax + rubberRange >= maxWidth ? maxWidth : obj.xMax + rubberRange,
                 obj.yMin - rubberRange <= 0 ? 0 : obj.yMin - rubberRange,
-                obj.yMax + rubberRange >= el.clientHeight ? el.clientHeight : obj.yMax + rubberRange
+                obj.yMax + rubberRange >= maxHeight ? maxHeight : obj.yMax + rubberRange
             ];
         },
 
@@ -151,7 +155,7 @@ var board = null;
                 var item = this.options.zIndexInfo[i];
                 // if (type === 'isAddPage') this.resetScale(item, curHeight, this.options.rubberRange);
                 if (type === 'isAddPage') {
-                    item.containerRect.height = h;
+                    item.containerRect.height = h * this.dpr;
                 } else {
                     for (var index = 0; index < item.content.length; index++) {
                         item.content[index].rectArea = this.getRectArea(item.content[index], this.options.rubberRange, this.wrapDom);
@@ -238,8 +242,10 @@ var board = null;
 
             var canvas = d.createElement('canvas');
             canvas.setAttribute('id', 'board-' + obj.zIndex);
-            canvas.width = parentEl.getBoundingClientRect().width;
-            canvas.height = parentEl.getBoundingClientRect().height;
+            canvas.style.width = parentEl.getBoundingClientRect().width + 'px';
+            canvas.style.height = parentEl.getBoundingClientRect().height + 'px';
+            canvas.width = parentEl.getBoundingClientRect().width * this.dpr;
+            canvas.height = parentEl.getBoundingClientRect().height * this.dpr;
             parentEl.appendChild(canvas);
 
             // 初始化画板对象
@@ -336,7 +342,7 @@ var board = null;
         this.beginPoint = null;
         this.coords = {};
         this.curve = null;
-        this.setUp(this.initSettings(obj));
+        this.setUp(this.initSettings(obj), 'init');
         this.drawingContent(Object.assign({}, this.canvasSettings));
         if (!obj.disabled) {
             this.initDrawEvent();
@@ -354,19 +360,22 @@ var board = null;
             };
         },
         // 当前画布设置更改（基础属性）
-        setUp: function (settings) {
+        setUp: function (settings, type) {
             for (var key in settings) {
                 this.canvasSettings[key] = settings[key];
             }
-            this.initCtx();
+            this.initCtx(type);
         },
         // 根据压感参数设置当前点的粗细
         setPointSize: function (baseLineWidth, pressure) {
             this.ctx.lineWidth = baseLineWidth * (pressure/4096);
         },
         // 初始化画板功能
-        initCtx: function () {
+        initCtx: function (type) {
             this.ctx = this.el.getContext("2d");
+            if (type === 'init') {
+                this.ctx.scale(this.superClass.dpr, this.superClass.dpr);
+            }
             this.ctx.strokeStyle = this.canvasSettings.strokeStyle;
             this.ctx.lineWidth = this.canvasSettings.lineWidth;
             this.ctx.lineCap = this.canvasSettings.lineCap;
@@ -627,8 +636,8 @@ var board = null;
             this.cbFunc('sync');
             this.clearEventBubble(e);
             this.rubberOn = true;
-            this.rubberStartX = coords.x;
-            this.rubberStartY = coords.y;
+            this.rubberStartX = coords.x / this.superClass.dpr;
+            this.rubberStartY = coords.y / this.superClass.dpr;
             var selDiv = document.createElement('div');
             selDiv.id = 'board-rubber-area';
             this.el.parentNode.appendChild(selDiv);
@@ -640,8 +649,8 @@ var board = null;
         rubberMove: function (e, coords) {
             if (!this.rubberOn) return;
             this.clearEventBubble(e);
-            var _x = coords.x;
-            var _y = coords.y;
+            var _x = coords.x / this.superClass.dpr;
+            var _y = coords.y / this.superClass.dpr;
             var selDiv = document.getElementById('board-rubber-area');
             selDiv.style.display = 'block';
             selDiv.style.left = Math.min(_x, this.rubberStartX) + 'px';
@@ -657,10 +666,10 @@ var board = null;
             this.clearEventBubble(e);
             var selDiv = document.getElementById('board-rubber-area');
             // 获取参数
-            var l = selDiv.offsetLeft;
-            var t = selDiv.offsetTop;
-            var w = selDiv.offsetWidth;
-            var h = selDiv.offsetHeight;
+            var l = selDiv.offsetLeft * this.superClass.dpr;
+            var t = selDiv.offsetTop * this.superClass.dpr;
+            var w = selDiv.offsetWidth * this.superClass.dpr;
+            var h = selDiv.offsetHeight * this.superClass.dpr;
 
             this.checkInnerWriting({
                 x: l,
