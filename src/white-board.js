@@ -800,14 +800,12 @@ var board = null;
                 top = rect.top;
             var x, y;
             if (e.touches && e.touches.length == 1) {
-                x = e.touches[0].pageX;
-                y = e.touches[0].pageY;
+                x = e.touches[0].clientX - left;
+                y = e.touches[0].pageY - top;
             } else {
-                x = e.pageX;
-                y = e.pageY;
+                x = e.offsetX;
+                y = e.offsetY;
             }
-            x = x - left;
-            y = y - top;
             x *= (width / rect.width);
             y *= (height / rect.height);
             return {

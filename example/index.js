@@ -41,7 +41,7 @@ function initBoard() {
                 "img": [],
                 "video": []
             },
-            "size": 10,
+            "size": 4,
             "zIndex": 1,
             "containerRect": {
                 "width": 700,
