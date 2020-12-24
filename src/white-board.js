@@ -799,13 +799,17 @@ var board = null;
                 left = rect.left,
                 top = rect.top;
             var x, y;
+
             if (e.touches && e.touches.length == 1) {
-                x = e.touches[0].clientX - left;
-                y = e.touches[0].pageY - top;
+                x = e.touches[0].pageX;
+                y = e.touches[0].pageY;
             } else {
-                x = e.offsetX;
-                y = e.offsetY;
+                x = e.pageX;
+                y = e.pageY;
             }
+            x = x - (window.pageXOffset + left);
+            y = y - (window.pageYOffset + top);
+
             x *= (width / rect.width);
             y *= (height / rect.height);
             return {
