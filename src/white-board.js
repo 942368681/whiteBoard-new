@@ -297,6 +297,19 @@ var board = null;
                     }
                 }
             }
+        },
+
+        // 设置输入类型
+        setInputType: function (inputType) {
+            this.canvasObj[0].setUp({ inputType: inputType});
+        },
+        // 设置输入颜色
+        setInputColor: function (inputColor) {
+            this.canvasObj[0].setUp({ strokeStyle: inputColor});
+        },
+        // 设置粗细
+        setInputSize: function (size) {
+            this.canvasObj[0].setUp({ lineWidth: Number(size)});
         }
     };
 

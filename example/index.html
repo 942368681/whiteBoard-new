@@ -9,27 +9,63 @@
     <style>
         html,
         body {
+            width: 100%;
             height: 100%;
             padding: 0;
             margin: 0;
         }
-
         body {
-            box-sizing: border-box;
             padding: 20px;
+            box-sizing: border-box;
+        }
+        p {
+            font-size: 16px;
         }
 
         #app {
-            width: 200%;
-            height: 100%;
-            /* overflow-y: overlay; */
+            margin: 0 auto;
+            width: 800px;
+            height: 500px;
         }
 
         .box {
             width: 100%;
-            height: 1380px;
-            box-sizing: border-box;
+            height: 100%;
             border: 1px solid #000;
+        }
+        .input-type, .color-type, .size {
+            width: 800px;
+            margin: 0 auto 20px;
+            display: flex;
+        }
+        .input-type button {
+            margin-right: 10px;
+        }
+        .input-type p, .color-type p {
+            margin: 0;
+            padding: 0;
+        }
+        .color-type span {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            margin-right: 10px;
+            cursor: pointer;
+        }
+        .color-type span:nth-of-type(1) {
+            background-color: #362c23;
+        }
+        .color-type span:nth-of-type(2) {
+            background-color: #ce6bd1;
+        }
+        .color-type span:nth-of-type(3) {
+            background-color: #c9153c;
+        }
+        .color-type span:nth-of-type(4) {
+            background-color: #c2f32d;
+        }
+        .color-type span:nth-of-type(5) {
+            background-color: #229daf;
         }
     </style>
 </head>
@@ -38,6 +74,23 @@
 </script>
 
 <body>
+    <div class="input-type">
+        <p>输入类型：</p>
+        <button data-type="fountain-pen">pencil</button>
+        <button data-type="fluorescent-pen">fluorescentpen</button>
+        <button data-type="rubber">eraser</button>
+    </div>
+    <div class="color-type">
+        <p>颜色：</p>
+        <span data-color="#362c23"></span>
+        <span data-color="#ce6bd1"></span>
+        <span data-color="#c9153c"></span>
+        <span data-color="#c2f32d"></span>
+        <span data-color="#229daf"></span>
+    </div>
+    <div class="size">
+        <input class="size-control" type="range" min="1" max="50" value="4" step="1" > 
+    </div>
     <div id="app">
         <div class="box">
 
