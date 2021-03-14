@@ -27,7 +27,7 @@ import { WhiteBoard } from 'white-board-pro2';
 ```
 
 ## 演示
-
+![img](https://github.com/942368681/whiteBoard-new/blob/master/assets/draw.gif)
 
 ## 使用
 
